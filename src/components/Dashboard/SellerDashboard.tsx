@@ -1,26 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Package, 
-  TrendingUp, 
-  Users, 
-  Star, 
-  Plus, 
-  Edit, 
-  Eye, 
-  BarChart3,
-  Calendar,
-  DollarSign,
-  ShoppingBag,
-  Home,
-  Settings,
-  Bell,
-  Filter,
-  Search,
-  Download,
-  Trash2,
-  Upload,
-  AlertCircle
-} from 'lucide-react';
+import { Package, TrendingUp, Users, Star, Plus, CreditCard as Edit, Eye, BarChart3, Calendar, DollarSign, ShoppingBag, Home, Settings, Bell, Filter, Search, Download, Trash2, Upload, AlertCircle } from 'lucide-react';
 import { useAuth } from '../Auth/AuthProvider';
 import { supabase } from '../../lib/supabase';
 
