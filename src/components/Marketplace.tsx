@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingBag, Star, Heart, Eye, Filter, Search } from 'lucide-react';
+import { ShoppingBag, Star, Heart, Eye, Filter, Search, Home } from 'lucide-react';
 import { useProducts, useHomestays } from '../hooks/useSupabase';
 import ARVRModal from './ARVRPreview/ARVRModal';
 
@@ -18,9 +18,10 @@ const Marketplace = () => {
   const categories = ['all', ...Array.from(new Set(products.map(p => p.category)))];
 
   const filteredProducts = products.filter(product => {
-    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || product.category?.toLowerCase() === selectedCategory.toLowerCase();
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
+    const hasActiveSeller = product.seller_id && product.is_active;
+    return matchesCategory && matchesSearch && hasActiveSeller;
   });
 
   const toggleFavorite = (productId) => {
@@ -142,9 +143,11 @@ const Marketplace = () => {
                       className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                     <div className="absolute top-4 left-4">
-                      <span className="bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        -{Math.round((1 - product.price / product.original_price) * 100)}%
-                      </span>
+                      {product.original_price > product.price && (
+                        <span className="bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                          -{Math.round((1 - product.price / product.original_price) * 100)}%
+                        </span>
+                      )}
                     </div>
                     <div className="absolute top-4 right-4 flex gap-2">
                       <button 
@@ -157,6 +160,13 @@ const Marketplace = () => {
                         <Eye className="w-5 h-5 text-gray-600" />
                       </button>
                     </div>
+                    {product.stock_quantity <= 5 && product.stock_quantity > 0 && (
+                      <div className="absolute bottom-4 left-4">
+                        <span className="bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                          Only {product.stock_quantity} left!
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="p-6">
@@ -183,13 +193,22 @@ const Marketplace = () => {
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <span className="text-2xl font-bold text-emerald-600">₹{product.price}</span>
-                        <span className="text-gray-400 line-through ml-2">₹{product.original_price}</span>
+                        {product.original_price > product.price && (
+                          <span className="text-gray-400 line-through ml-2">₹{product.original_price}</span>
+                        )}
                       </div>
                     </div>
 
-                    <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center">
+                    <button 
+                      className={`w-full py-3 rounded-lg font-semibold transition-colors flex items-center justify-center ${
+                        product.stock_quantity > 0 
+                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white' 
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
+                      disabled={product.stock_quantity === 0}
+                    >
                       <ShoppingBag className="w-4 h-4 mr-2" />
-                      Add to Cart
+                      {product.stock_quantity > 0 ? 'Add to Cart' : 'Out of Stock'}
                     </button>
                     <button 
                       onClick={() => handleARVRPreview(product, 'product')}
@@ -200,6 +219,19 @@ const Marketplace = () => {
                   </div>
                 </div>
               ))}
+              {filteredProducts.length === 0 && (
+                <div className="col-span-full text-center py-12">
+                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <ShoppingBag className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+                  <p className="text-gray-600">
+                    {searchTerm || selectedCategory !== 'all' 
+                      ? 'Try adjusting your search or filters.' 
+                      : 'Check back later for new products from verified sellers.'}
+                  </p>
+                </div>
+              )}
             </div>
           </>
         )}

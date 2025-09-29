@@ -2,6 +2,13 @@ import React from 'react';
 import { ArrowRight, Sparkles, Map, Users } from 'lucide-react';
 
 const Hero = () => {
+  const scrollToDestinations = () => {
+    const destinationsSection = document.getElementById('destinations');
+    if (destinationsSection) {
+      destinationsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
@@ -36,10 +43,16 @@ const Hero = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-          <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
+          <button 
+            onClick={scrollToDestinations}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
+          >
             Start Your Journey <ArrowRight className="ml-2 w-5 h-5" />
           </button>
-          <button className="border-2 border-white text-white hover:bg-white hover:text-gray-900 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300">
+          <button 
+            onClick={scrollToDestinations}
+            className="border-2 border-white text-white hover:bg-white hover:text-gray-900 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300"
+          >
             Explore Destinations
           </button>
         </div>

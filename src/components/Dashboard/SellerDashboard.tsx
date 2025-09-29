@@ -233,9 +233,12 @@ const SellerDashboard = () => {
           image_url: imageUrl,
           artisan_name: user?.user_metadata?.full_name || user?.email,
           seller_id: sellerProfile.id,
+          location: 'Jharkhand', // You can make this dynamic later
           stock_quantity: productFormData.stock_quantity,
           is_active: productFormData.is_active,
-          featured: productFormData.featured
+          featured: productFormData.featured,
+          rating: 0,
+          reviews_count: 0
         }
       ]);
       

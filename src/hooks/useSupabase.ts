@@ -95,7 +95,15 @@ export function useHomestays() {
       try {
         const { data, error } = await supabase
           .from('homestays')
-          .select('*')
+          .select(`
+            *,
+            seller_profiles!inner(
+              business_name,
+              verification_status
+            )
+          `)
+          .eq('is_available', true)
+          .not('seller_id', 'is', null)
           .order('rating', { ascending: false });
 
         if (error) throw error;

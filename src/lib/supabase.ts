@@ -56,6 +56,14 @@ export interface Product {
   reviews_count: number;
   category: string;
   description: string;
+  seller_id?: string;
+  stock_quantity?: number;
+  is_active?: boolean;
+  featured?: boolean;
+  seller_profiles?: {
+    business_name: string;
+    verification_status: string;
+  };
   created_at: string;
   updated_at: string;
 }
@@ -71,6 +79,14 @@ export interface Homestay {
   reviews_count: number;
   amenities: string[];
   description?: string;
+  seller_id?: string;
+  is_available?: boolean;
+  max_guests?: number;
+  min_stay_nights?: number;
+  seller_profiles?: {
+    business_name: string;
+    verification_status: string;
+  };
   created_at: string;
   updated_at: string;
 }
