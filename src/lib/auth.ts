@@ -100,28 +100,39 @@ export class AuthService {
         .from('user_profiles')
         .upsert({
           id: user.id,
-          full_name: userData.full_name || user.user_metadata?.full_name || '',
+          full_name: userData.full_name || user.user_metadata?.full_name || user.user_metadata?.name || '',
           phone: userData.phone || user.user_metadata?.phone || '',
-          preferences: {}
+          preferences: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         });
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        // Don't throw error, just log it
+      }
 
       // Create role-specific profiles
       if (userData.role === 'seller') {
-        await supabase
+        const { error: sellerError } = await supabase
           .from('seller_profiles')
           .upsert({
             user_id: user.id,
             business_name: userData.business_name || '',
             business_type: userData.business_type || 'artisan',
             business_description: userData.business_description || '',
-            verification_status: 'pending'
+            verification_status: 'pending',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           });
+
+        if (sellerError) {
+          console.error('Seller profile creation error:', sellerError);
+        }
       }
 
       if (userData.role === 'gov_admin') {
-        await supabase
+        const { error: adminError } = await supabase
           .from('government_officials')
           .upsert({
             user_id: user.id,
@@ -129,8 +140,14 @@ export class AuthService {
             department: userData.department || 'Tourism',
             designation: userData.designation || 'Officer',
             office_location: userData.office_location || '',
-            verification_status: 'pending'
+            verification_status: 'pending',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           });
+
+        if (adminError) {
+          console.error('Admin profile creation error:', adminError);
+        }
       }
 
       return { error: null };
@@ -143,27 +160,16 @@ export class AuthService {
   // Assign role to user
   static async assignUserRole(userId: string, roleName: string) {
     try {
-      // Get or create role
-      let { data: role, error: roleError } = await supabase
+      // Get role
+      const { data: role, error: roleError } = await supabase
         .from('user_roles')
         .select('id')
         .eq('role_name', roleName)
         .single();
 
       if (roleError || !role) {
-        // Create role if it doesn't exist
-        const { data: newRole, error: createRoleError } = await supabase
-          .from('user_roles')
-          .upsert({
-            role_name: roleName,
-            description: `${roleName} role`,
-            permissions: this.getDefaultPermissions(roleName)
-          })
-          .select('id')
-          .single();
-
-        if (createRoleError) throw createRoleError;
-        role = newRole;
+        console.error('Role not found:', roleName);
+        return { error: roleError };
       }
 
       // Assign role to user
@@ -172,10 +178,15 @@ export class AuthService {
         .upsert({
           user_id: userId,
           role_id: role.id,
-          is_active: true
+          is_active: true,
+          assigned_at: new Date().toISOString()
         });
 
-      if (assignError) throw assignError;
+      if (assignError) {
+        console.error('Role assignment error:', assignError);
+        return { error: assignError };
+      }
+
       return { error: null };
     } catch (error) {
       console.error('Role assignment error:', error);
@@ -195,10 +206,16 @@ export class AuthService {
         `)
         .eq('user_id', userId)
         .eq('is_active', true)
+        .order('assigned_at', { ascending: false })
+        .limit(1)
         .single();
 
-      if (error || !data) return 'user';
-      return data.user_roles?.role_name || 'user';
+      if (error || !data) {
+        console.log('No role found for user, defaulting to user role');
+        return 'user';
+      }
+
+      return (data as any).user_roles?.role_name || 'user';
     } catch (error) {
       console.error('Get user role error:', error);
       return 'user';

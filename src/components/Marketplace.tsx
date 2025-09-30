@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
-import { ShoppingBag, Star, Heart, Eye, Filter, Search, Home } from 'lucide-react';
+import { ShoppingBag, Star, Heart, Eye, Filter, Search, Home, CheckCircle } from 'lucide-react';
 import { useProducts, useHomestays } from '../hooks/useSupabase';
 import ARVRModal from './ARVRPreview/ARVRModal';
-
 
 const Marketplace = () => {
   const [activeTab, setActiveTab] = useState('products');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [favorites, setFavorites] = useState([]);
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
   const [arvrModalOpen, setArvrModalOpen] = useState(false);
   
   const { products, loading: productsLoading, error: productsError } = useProducts();
@@ -20,11 +19,10 @@ const Marketplace = () => {
   const filteredProducts = products.filter(product => {
     const matchesCategory = selectedCategory === 'all' || product.category?.toLowerCase() === selectedCategory.toLowerCase();
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const hasActiveSeller = product.seller_id && product.is_active;
-    return matchesCategory && matchesSearch && hasActiveSeller;
+    return matchesCategory && matchesSearch;
   });
 
-  const toggleFavorite = (productId) => {
+  const toggleFavorite = (productId: string) => {
     setFavorites(prev => 
       prev.includes(productId) 
         ? prev.filter(id => id !== productId)
@@ -32,7 +30,7 @@ const Marketplace = () => {
     );
   };
 
-  const handleARVRPreview = (item, type) => {
+  const handleARVRPreview = (item: any, type: string) => {
     setSelectedItem({ ...item, type });
     setArvrModalOpen(true);
   };
@@ -62,6 +60,7 @@ const Marketplace = () => {
       </section>
     );
   }
+
   return (
     <section id="marketplace" className="py-20 bg-white">
       <div className="container mx-auto px-4">
@@ -176,9 +175,19 @@ const Marketplace = () => {
                     <p className="text-gray-600 text-sm mb-3">{product.description}</p>
                     
                     <div className="mb-3">
-                      <p className="text-sm text-gray-600">
-                        by <span className="font-medium text-emerald-600">{product.artisan_name}</span>
-                      </p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-gray-600">
+                          by <span className="font-medium text-emerald-600">
+                            {product.seller_profiles?.business_name || product.artisan_name}
+                          </span>
+                        </p>
+                        {product.seller_profiles?.verification_status === 'verified' && (
+                          <div className="flex items-center">
+                            <CheckCircle className="w-4 h-4 text-green-500 mr-1" />
+                            <span className="text-xs text-green-600 font-medium">Verified</span>
+                          </div>
+                        )}
+                      </div>
                       <p className="text-sm text-gray-500">{product.location}</p>
                     </div>
 
@@ -250,11 +259,25 @@ const Marketplace = () => {
                     <span className="text-2xl font-bold text-emerald-600">₹{homestay.price_per_night}</span>
                     <span className="text-gray-600 text-sm">/night</span>
                   </div>
+                  {homestay.seller_profiles?.verification_status === 'verified' && (
+                    <div className="absolute top-4 right-4">
+                      <div className="bg-green-500 text-white p-2 rounded-full">
+                        <CheckCircle className="w-4 h-4" />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-2">{homestay.name}</h3>
-                  <p className="text-gray-600 mb-3">Hosted by {homestay.host_name}</p>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-gray-600">Hosted by {homestay.host_name}</p>
+                    {homestay.seller_profiles?.verification_status === 'verified' && (
+                      <span className="text-xs text-green-600 font-medium bg-green-50 px-2 py-1 rounded-full">
+                        Verified Host
+                      </span>
+                    )}
+                  </div>
                   <p className="text-emerald-600 font-medium mb-3">{homestay.location}</p>
                   
                   <div className="flex items-center mb-4">
@@ -289,6 +312,15 @@ const Marketplace = () => {
                 </div>
               </div>
             ))}
+            {homestays.length === 0 && (
+              <div className="col-span-full text-center py-12">
+                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Home className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No homestays available</h3>
+                <p className="text-gray-600">Check back later for new homestays from verified hosts.</p>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -305,9 +337,9 @@ const Marketplace = () => {
           type={selectedItem.type === 'homestay' ? 'destination' : 'product'}
           previewData={{
             images: [
-              selectedItem.image_url?.replace('https://images.pexels.com', '/pexels') || '',
-              '/pexels/photos/1287145/pexels-photo-1287145.jpeg?auto=compress&cs=tinysrgb&w=1200',
-              '/pexels/photos/1366919/pexels-photo-1366919.jpeg?auto=compress&cs=tinysrgb&w=1200'
+              selectedItem.image_url?.replace('https://images.pexels.com', 'https://images.pexels.com') || '',
+              'https://images.pexels.com/photos/1287145/pexels-photo-1287145.jpeg?auto=compress&cs=tinysrgb&w=1200',
+              'https://images.pexels.com/photos/1366919/pexels-photo-1366919.jpeg?auto=compress&cs=tinysrgb&w=1200'
             ],
             audioGuide: 'audio-guide-url'
           }}

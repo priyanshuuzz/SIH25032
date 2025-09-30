@@ -67,7 +67,15 @@ export function useProducts() {
       try {
         const { data, error } = await supabase
           .from('products')
-          .select('*')
+          .select(`
+            *,
+            seller_profiles!inner(
+              business_name,
+              verification_status
+            )
+          `)
+          .eq('is_active', true)
+          .not('seller_id', 'is', null)
           .order('rating', { ascending: false });
 
         if (error) throw error;

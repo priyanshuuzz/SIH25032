@@ -72,6 +72,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setSession(session);
       
       if (session?.user) {
+        // For OAuth users, create profile if it doesn't exist
+        if (event === 'SIGNED_IN' && session.user.app_metadata?.provider) {
+          await AuthService.createUserProfile(session.user, {
+            full_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || '',
+            phone: session.user.user_metadata?.phone || '',
+            role: 'user'
+          });
+          await AuthService.assignUserRole(session.user.id, 'user');
+        }
+        
         await refreshUser();
       } else {
         setUser(null);

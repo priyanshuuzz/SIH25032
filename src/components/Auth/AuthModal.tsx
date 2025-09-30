@@ -66,15 +66,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onModeChan
         if (error) throw error;
         
         setSuccess('Account created successfully! Please check your email for verification.');
-        setTimeout(() => {
-          onClose();
-        }, 2000);
       } else {
         const { error } = await AuthService.signIn(formData.email, formData.password);
         
         if (error) throw error;
         
-        onClose();
       }
     } catch (err: any) {
       setError(err.message || 'Authentication failed');

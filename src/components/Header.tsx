@@ -86,7 +86,7 @@ const Header = () => {
                   <User className="w-5 h-5 text-gray-600" />
                   <div className="flex flex-col">
                     <span className="text-gray-700 text-sm">
-                      {user.user_metadata?.full_name || user.user_metadata?.name || user.email}
+                      {user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0]}
                     </span>
                     <span className="text-xs text-gray-500 capitalize">{userRole}</span>
                   </div>
@@ -145,7 +145,7 @@ const Header = () => {
                     <User className="w-5 h-5 text-gray-600" />
                     <div className="flex flex-col">
                       <span className="text-gray-700 text-sm">
-                        {user.user_metadata?.full_name || user.user_metadata?.name || user.email}
+                        {user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0]}
                       </span>
                       <span className="text-xs text-gray-500 capitalize">{userRole}</span>
                     </div>
